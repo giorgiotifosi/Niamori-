@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import Header from './components/Header';
 import LandingHero from './components/LandingHero';
 import LandingFeatures from './components/LandingFeatures';
 import LandingProcess from './components/LandingProcess';
@@ -18,6 +19,8 @@ const App: React.FC = () => {
 
   return (
     <div className="bg-[#0a0a0a] min-h-screen text-white selection:bg-[#d4af37] selection:text-black font-['Noto_Sans_Georgian']">
+      <Header />
+      
       <main>
         <LandingHero onAction={openModal} />
         <LandingShowcase onAction={openModal} />

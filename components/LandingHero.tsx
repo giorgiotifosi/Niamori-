@@ -7,7 +7,7 @@ interface Props {
 
 const LandingHero: React.FC<Props> = ({ onAction }) => {
   return (
-    <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden pt-12">
+    <section className="relative min-h-[80vh] flex items-center justify-center overflow-hidden py-12 md:py-20">
       {/* Background visual effects */}
       <div className="absolute inset-0 z-0">
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#d4af37]/10 rounded-full blur-[120px]"></div>
@@ -47,7 +47,7 @@ const LandingHero: React.FC<Props> = ({ onAction }) => {
             <img 
               src="https://static.wixstatic.com/media/046dc4_e86d7ae8da694edfabd450cbf0f93455~mv2.webp" 
               alt="Premium Kindzmarauli" 
-              className="h-[500px] md:h-[650px] object-contain drop-shadow-[0_35px_35px_rgba(0,0,0,0.8)] animate-slow-float"
+              className="h-[450px] md:h-[600px] object-contain drop-shadow-[0_35px_35px_rgba(0,0,0,0.8)] animate-slow-float"
             />
           </div>
         </div>
