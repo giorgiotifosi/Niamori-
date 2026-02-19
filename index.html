@@ -8,11 +8,11 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Georgian:wght@400;700&display=swap" rel="stylesheet">
     <script>
-        // Critical shim for process.env to prevent ReferenceErrors during execution.
-        // This ensures bundled code doesn't crash if it tries to access process.env.
-        window.process = window.process || {};
-        window.process.env = window.process.env || {};
-        window.process.env.API_KEY = window.process.env.API_KEY || "";
+        // Define process.env globally to prevent ReferenceErrors in the browser.
+        // We do not set a default empty string for API_KEY here to avoid Gemini SDK's immediate validation crash.
+        window.process = {
+            env: {}
+        };
     </script>
     <style>
         body {
@@ -50,7 +50,6 @@
 </head>
 <body>
     <div id="root"></div>
-    <!-- Using a relative path ensures the bundler correctly identifies the entry point -->
     <script type="module" src="./index.tsx"></script>
 </body>
 </html>
