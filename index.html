@@ -10,11 +10,36 @@
     <style>
         body {
             font-family: 'Noto Sans Georgian', sans-serif;
-            background-color: #f8f8f8;
+            background-color: #0a0a0a;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
         }
-        .bg-niamori-dark { background-color: #232323; }
-        .text-niamori-gold { color: #c4a484; }
-        .border-niamori-gold { border-color: #c4a484; }
+        /* Smooth scrolling for anchor links */
+        html {
+          scroll-behavior: smooth;
+        }
+        /* Custom scrollbar for deep dark theme */
+        ::-webkit-scrollbar {
+          width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+          background: #0a0a0a;
+        }
+        ::-webkit-scrollbar-thumb {
+          background: #222;
+          border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+          background: #333;
+        }
+        .no-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
+        .no-scrollbar {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
     </style>
 <script type="importmap">
 {
@@ -22,6 +47,7 @@
     "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
     "react/": "https://esm.sh/react@^19.2.4/",
     "react": "https://esm.sh/react@^19.2.4",
+    "react-dom": "https://esm.sh/react-dom@^19.2.4",
     "@google/genai": "https://esm.sh/@google/genai@^1.42.0"
   }
 }
@@ -29,5 +55,7 @@
 </head>
 <body>
     <div id="root"></div>
+    <!-- Load the main React entry point -->
+    <script type="module" src="./index.tsx"></script>
 </body>
 </html>
