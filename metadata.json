@@ -1,0 +1,7 @@
+{
+  "name": "Niamori E-commerce Clone",
+  "description": "A high-end Georgian e-commerce platform for wines, chacha, and brandy, featuring authentic category structures and a smart sommelier assistant.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
