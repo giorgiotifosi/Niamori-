@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import LandingHero from './components/LandingHero';
 import LandingFeatures from './components/LandingFeatures';
 import LandingProcess from './components/LandingProcess';
@@ -8,7 +8,7 @@ import LandingScarcity from './components/LandingScarcity';
 import LandingCTA from './components/LandingCTA';
 import LandingShowcase from './components/LandingShowcase';
 import OrderFormModal from './components/OrderFormModal';
-import AiChat from './components/AiChat';
+import CallButton from './components/CallButton';
 
 const App: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -18,8 +18,6 @@ const App: React.FC = () => {
 
   return (
     <div className="bg-[#0a0a0a] min-h-screen text-white selection:bg-[#d4af37] selection:text-black font-['Noto_Sans_Georgian']">
-      {/* No Nav as requested */}
-      
       <main>
         <LandingHero onAction={openModal} />
         <LandingShowcase onAction={openModal} />
@@ -52,7 +50,7 @@ const App: React.FC = () => {
       </footer>
 
       {isModalOpen && <OrderFormModal onClose={closeModal} />}
-      <AiChat />
+      <CallButton />
     </div>
   );
 };
