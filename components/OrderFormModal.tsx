@@ -1,6 +1,6 @@
 
-import React, { useState } from 'react';
-import { jsPDF } from 'https://esm.sh/jspdf@2.5.1';
+import React, { useState, useRef } from 'react';
+import html2pdf from 'https://esm.sh/html2pdf.js@0.10.1';
 
 interface Props {
   onClose: () => void;
@@ -9,6 +9,8 @@ interface Props {
 const OrderFormModal: React.FC<Props> = ({ onClose }) => {
   const [step, setStep] = useState(1);
   const [isGenerating, setIsGenerating] = useState(false);
+  const invoiceTemplateRef = useRef<HTMLDivElement>(null);
+  
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -18,67 +20,27 @@ const OrderFormModal: React.FC<Props> = ({ onClose }) => {
     price: '115.00 ₾'
   });
 
-  const generateInvoice = () => {
+  const generateInvoice = async () => {
+    if (!invoiceTemplateRef.current) return;
     setIsGenerating(true);
-    const doc = new jsPDF();
-    
-    // Header - Brand Name
-    doc.setFontSize(22);
-    doc.setTextColor(212, 175, 55); // Gold color
-    doc.text('NIAMORI - ნიამორი', 105, 20, { align: 'center' });
-    
-    doc.setFontSize(10);
-    doc.setTextColor(100, 100, 100);
-    doc.text('ინვოისი #INV-' + Math.floor(Math.random() * 90000 + 10000), 20, 40);
-    doc.text('თარიღი: ' + new Date().toLocaleDateString('ka-GE'), 20, 45);
 
-    // Customer Info
-    doc.setFontSize(14);
-    doc.setTextColor(0, 0, 0);
-    doc.text('მყიდველის ინფორმაცია:', 20, 60);
-    doc.setFontSize(11);
-    doc.text(`სახელი: ${formData.name}`, 20, 70);
-    doc.text(`ელ-ფოსტა: ${formData.email}`, 20, 75);
-    doc.text(`ტელეფონი: ${formData.phone}`, 20, 80);
+    const element = invoiceTemplateRef.current;
+    const opt = {
+      margin: 10,
+      filename: `niamori-invoice-${formData.name}.pdf`,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true, letterRendering: true },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
 
-    // Order Info
-    doc.setFontSize(14);
-    doc.text('შეკვეთის დეტალები:', 20, 95);
-    doc.setDrawColor(230, 230, 230);
-    doc.line(20, 98, 190, 98);
-    
-    doc.setFontSize(11);
-    doc.text('პროდუქტი:', 20, 110);
-    doc.text(formData.wine, 70, 110);
-    
-    doc.text('გრავირების ტექსტი:', 20, 120);
-    doc.text(formData.engraving, 70, 120, { maxWidth: 120 });
-    
-    doc.setFontSize(14);
-    doc.text('ჯამური ფასი:', 20, 145);
-    doc.setFontSize(16);
-    doc.setTextColor(185, 28, 28); // Red
-    doc.text(formData.price, 70, 145);
-
-    // Bank Details
-    doc.setFontSize(14);
-    doc.setTextColor(0, 0, 0);
-    doc.text('საბანკო რეკვიზიტები:', 20, 170);
-    doc.setFontSize(10);
-    doc.setTextColor(80, 80, 80);
-    doc.text('მიმღები: შპს ნიამორი (ს/კ: 405157431)', 20, 180);
-    doc.text('TBC Bank: GE29TB7968536020100006', 20, 185);
-    doc.text('Bank of Georgia: GE21BG0000000499279996', 20, 190);
-
-    // Footer
-    doc.setFontSize(9);
-    doc.setTextColor(150, 150, 150);
-    doc.text('გმადლობთ, რომ ირჩევთ ნიამორს!', 105, 270, { align: 'center' });
-    doc.text('office@niamori.ge | +995 555 682 266', 105, 275, { align: 'center' });
-
-    // Download
-    doc.save(`niamori-invoice-${formData.name}.pdf`);
-    setIsGenerating(false);
+    try {
+      await html2pdf().set(opt).from(element).save();
+    } catch (err) {
+      console.error('PDF Generation Error:', err);
+      alert('PDF-ის გენერაციისას მოხდა შეცდომა');
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -93,6 +55,97 @@ const OrderFormModal: React.FC<Props> = ({ onClose }) => {
 
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+      {/* Hidden Invoice Template for PDF Generation */}
+      <div className="absolute opacity-0 pointer-events-none -z-10">
+        <div 
+          ref={invoiceTemplateRef} 
+          className="w-[210mm] p-[20mm] bg-white text-black font-['Noto_Sans_Georgian'] leading-relaxed"
+          style={{ fontFamily: "'Noto Sans Georgian', sans-serif" }}
+        >
+          {/* Header */}
+          <div className="flex justify-between items-center border-b-2 border-[#d4af37] pb-8 mb-10">
+            <div>
+              <h1 className="text-3xl font-black text-[#d4af37] uppercase tracking-tighter">NIAMORI • ნიამორი</h1>
+              <p className="text-sm text-gray-500 mt-1">ექსკლუზიური საჩუქრები გრავირებით</p>
+            </div>
+            <div className="text-right">
+              <h2 className="text-xl font-bold uppercase tracking-widest text-gray-400">ინვოისი</h2>
+              <p className="text-sm">#{Math.floor(Math.random() * 90000 + 10000)}</p>
+              <p className="text-sm">თარიღი: {new Date().toLocaleDateString('ka-GE')}</p>
+            </div>
+          </div>
+
+          {/* Info Sections */}
+          <div className="grid grid-cols-2 gap-12 mb-12">
+            <div>
+              <h3 className="text-xs font-bold uppercase text-gray-400 mb-4 tracking-widest">მყიდველი</h3>
+              <p className="font-bold text-lg">{formData.name}</p>
+              <p className="text-sm text-gray-600">{formData.email}</p>
+              <p className="text-sm text-gray-600">{formData.phone}</p>
+            </div>
+            <div>
+              <h3 className="text-xs font-bold uppercase text-gray-400 mb-4 tracking-widest">მიმღები</h3>
+              <p className="font-bold text-lg">შპს ნიამორი</p>
+              <p className="text-sm text-gray-600">ს/კ: 405157431</p>
+              <p className="text-sm text-gray-600">თბილისი, ჩერქეზიშვილის 33</p>
+            </div>
+          </div>
+
+          {/* Product Table */}
+          <div className="mb-12">
+            <table className="w-full text-left">
+              <thead>
+                <tr className="border-b border-gray-200">
+                  <th className="py-4 text-xs font-bold uppercase text-gray-400">დასახელება</th>
+                  <th className="py-4 text-xs font-bold uppercase text-gray-400 text-right">ფასი</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="border-b border-gray-100">
+                  <td className="py-6">
+                    <p className="font-bold text-lg">{formData.wine}</p>
+                    <p className="text-sm text-gray-500 mt-2 italic">
+                      გრავირება: "{formData.engraving}"
+                    </p>
+                  </td>
+                  <td className="py-6 text-right font-bold text-lg">{formData.price}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          {/* Payment and Totals */}
+          <div className="grid grid-cols-2 gap-12 items-start pt-8">
+            <div className="bg-gray-50 p-6 rounded-2xl border border-gray-100">
+              <h3 className="text-xs font-bold uppercase text-[#d4af37] mb-4 tracking-widest">საბანკო რეკვიზიტები</h3>
+              <div className="space-y-3 text-sm">
+                <p><span className="text-gray-400">TBC:</span> <strong>GE29TB7968536020100006</strong></p>
+                <p><span className="text-gray-400">BOG:</span> <strong>GE21BG0000000499279996</strong></p>
+                <p className="text-[10px] text-gray-400 mt-4 leading-tight italic">
+                  * გთხოვთ, გადარიცხვისას დანიშნულებაში მიუთითოთ თქვენი სახელი ან ინვოისის ნომერი.
+                </p>
+              </div>
+            </div>
+            <div className="text-right space-y-4">
+              <div className="flex justify-between items-center">
+                <span className="text-gray-400 font-bold uppercase text-xs">ჯამი:</span>
+                <span className="text-xl font-bold">{formData.price}</span>
+              </div>
+              <div className="border-t-2 border-black pt-4 flex justify-between items-center">
+                <span className="text-black font-black uppercase text-sm">სულ გადასახდელი:</span>
+                <span className="text-3xl font-black text-red-800">{formData.price}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Footer */}
+          <div className="mt-20 text-center border-t border-gray-100 pt-10">
+            <p className="text-sm font-bold text-gray-400 uppercase tracking-[0.3em] mb-2">გმადლობთ არჩევანისთვის</p>
+            <p className="text-xs text-gray-400">office@niamori.ge • +995 555 682 266 • niamori.ge</p>
+          </div>
+        </div>
+      </div>
+
       <div className="absolute inset-0 bg-black/90 backdrop-blur-sm" onClick={onClose}></div>
       
       <div className="bg-white text-black w-full max-w-lg rounded-[40px] p-8 md:p-12 relative z-[210] overflow-hidden shadow-2xl max-h-[90vh] overflow-y-auto">
@@ -120,17 +173,21 @@ const OrderFormModal: React.FC<Props> = ({ onClose }) => {
               <button 
                 onClick={generateInvoice}
                 disabled={isGenerating}
-                className="w-full bg-[#d4af37] text-black py-4 rounded-xl font-bold flex items-center justify-center space-x-2 hover:bg-[#b8952e] transition-colors shadow-lg"
+                className={`w-full ${isGenerating ? 'bg-gray-200' : 'bg-[#d4af37]'} text-black py-4 rounded-xl font-bold flex items-center justify-center space-x-2 hover:bg-[#b8952e] transition-colors shadow-lg`}
               >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
+                {isGenerating ? (
+                  <div className="w-5 h-5 border-2 border-black/30 border-t-black rounded-full animate-spin"></div>
+                ) : (
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                )}
                 <span>{isGenerating ? 'მზადდება...' : 'ინვოისის ჩამოტვირთვა'}</span>
               </button>
             </div>
             
             <div className="bg-gray-50 p-6 rounded-3xl text-left space-y-4 border border-gray-100">
-              <p className="text-xs font-bold text-gray-400 uppercase tracking-widest text-center">ანგარიშსწორება</p>
+              <p className="text-xs font-bold text-gray-400 uppercase tracking-widest text-center">საბანკო გადმორიცხვა</p>
               
               <div className="space-y-3">
                 <div className="flex flex-col space-y-1">
@@ -156,11 +213,6 @@ const OrderFormModal: React.FC<Props> = ({ onClose }) => {
                     </button>
                   </div>
                 </div>
-              </div>
-
-              <div className="pt-2 border-t border-gray-200 space-y-1">
-                <p className="text-[11px]"><span className="text-gray-400">მიმღები:</span> <span className="font-bold">შპს ნიამორი</span></p>
-                <p className="text-[11px]"><span className="text-gray-400">საიდენტიფიკაციო კოდი:</span> <span className="font-bold">405157431</span></p>
               </div>
             </div>
 
