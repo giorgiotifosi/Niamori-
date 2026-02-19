@@ -20,7 +20,7 @@ const LandingHero: React.FC<Props> = ({ onAction }) => {
             პრემიუმ ხარისხი
           </div>
           <h1 className="text-5xl md:text-7xl font-bold leading-tight">
-            აჩუქე <span className="text-[#d4af37]">ქინძმარაული</span>, რომელიც სამუდამოდ დარჩება
+            საჩუქარი, რომელსაც <span className="text-[#d4af37]">არასდროს</span> დაივიწყებენ
           </h1>
           <p className="text-xl text-gray-400 max-w-xl mx-auto lg:mx-0">
             პერსონალური გრავირება პირდაპირ მინაზე. ეს არ არის სტიკერი - ეს არის მარადიული კვალი თქვენს საჩუქარზე.
