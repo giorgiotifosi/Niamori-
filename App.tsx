@@ -45,9 +45,9 @@ const App: React.FC = () => {
 
       <footer className="py-12 border-t border-white/5 text-center text-gray-500 text-sm">
         <div className="flex justify-center space-x-6 mb-6">
-          <span className="cursor-pointer hover:text-white">Facebook</span>
-          <span className="cursor-pointer hover:text-white">Instagram</span>
-          <span className="cursor-pointer hover:text-white">TikTok</span>
+          <a href="https://www.facebook.com/niamori.ge" target="_blank" rel="noopener noreferrer" className="cursor-pointer hover:text-white transition-colors">Facebook</a>
+          <a href="https://www.instagram.com/niamori.ge" target="_blank" rel="noopener noreferrer" className="cursor-pointer hover:text-white transition-colors">Instagram</a>
+          <a href="https://www.tiktok.com/@niamori.ge" target="_blank" rel="noopener noreferrer" className="cursor-pointer hover:text-white transition-colors">TikTok</a>
         </div>
         <p>© 2025 ნიამორი • ექსკლუზიური საჩუქრები. ყველა უფლება დაცულია.</p>
       </footer>

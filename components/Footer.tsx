@@ -48,11 +48,10 @@ const Footer: React.FC = () => {
               <li>ვარლამ ჩერქეზიშვილის 33</li>
               <li>+995 555 682 266</li>
               <li>niamori22@gmail.com</li>
-              <li className="pt-6 space-y-2">
-                 <a href="#" className="block hover:text-white">facebook</a>
-                 <a href="#" className="block hover:text-white">instagram</a>
-                 <a href="#" className="block hover:text-white">tiktok</a>
-                 <a href="#" className="block hover:text-white">youtube</a>
+              <li className="pt-6 space-y-2 flex flex-col">
+                 <a href="https://www.facebook.com/niamori.ge" target="_blank" rel="noopener noreferrer" className="block hover:text-white transition-colors">facebook</a>
+                 <a href="https://www.instagram.com/niamori.ge" target="_blank" rel="noopener noreferrer" className="block hover:text-white transition-colors">instagram</a>
+                 <a href="https://www.tiktok.com/@niamori.ge" target="_blank" rel="noopener noreferrer" className="block hover:text-white transition-colors">tiktok</a>
               </li>
             </ul>
           </div>
@@ -63,7 +62,6 @@ const Footer: React.FC = () => {
              Copyright © 2025 | Niamori • ნიამორი. All rights reserved.
           </p>
           <div className="flex items-center space-x-2">
-             {/* Simple placeholders for Visa/Mastercard */}
              <div className="bg-white px-2 py-1 rounded text-blue-900 font-bold italic text-xs">VISA</div>
              <div className="bg-white px-2 py-1 rounded text-orange-600 font-bold italic text-xs">Mastercard</div>
           </div>
