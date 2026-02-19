@@ -5,14 +5,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Niamori - ნიამორი</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Preload critical fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Georgian:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        // Define process.env globally to prevent ReferenceErrors in the browser.
-        // We do not set a default empty string for API_KEY here to avoid Gemini SDK's immediate validation crash.
-        window.process = {
-            env: {}
-        };
+        // Global process shim
+        window.process = { env: { API_KEY: "" } };
     </script>
     <style>
         body {
@@ -23,33 +23,82 @@
             overflow-x: hidden;
             color: white;
         }
-        html {
-          scroll-behavior: smooth;
+        /* Initial Loading Screen Styles */
+        #initial-loader {
+            position: fixed;
+            inset: 0;
+            background: #0a0a0a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease-out;
         }
-        ::-webkit-scrollbar {
-          width: 8px;
+        .loader-logo {
+            width: 80px;
+            height: 80px;
+            border: 2px solid #d4af37;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
         }
-        ::-webkit-scrollbar-track {
-          background: #0a0a0a;
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
-        ::-webkit-scrollbar-thumb {
-          background: #222;
-          border-radius: 10px;
+        .loading-text {
+            margin-top: 20px;
+            color: #d4af37;
+            font-size: 14px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
         }
+        /* Fade-in for the main app */
+        #root {
+            opacity: 0;
+            transition: opacity 0.8s ease-in;
+        }
+        #root.loaded {
+            opacity: 1;
+        }
+        
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0a0a0a; }
+        ::-webkit-scrollbar-thumb { background: #222; border-radius: 10px; }
     </style>
 <script type="importmap">
 {
   "imports": {
+    "react/": "https://esm.sh/react@^19.2.4/",
     "react": "https://esm.sh/react@^19.2.4",
     "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
-    "react/": "https://esm.sh/react@^19.2.4/",
     "@google/genai": "https://esm.sh/@google/genai@^1.42.0"
   }
 }
 </script>
 </head>
 <body>
+    <div id="initial-loader">
+        <div className="loader-logo"></div>
+        <div class="loading-text">Niamori</div>
+    </div>
+
     <div id="root"></div>
+
     <script type="module" src="./index.tsx"></script>
+    <script>
+        // Hide loader when React is ready
+        window.addEventListener('load', () => {
+            const loader = document.getElementById('initial-loader');
+            const root = document.getElementById('root');
+            if (loader && root) {
+                loader.style.opacity = '0';
+                setTimeout(() => {
+                    loader.style.display = 'none';
+                    root.classList.add('loaded');
+                }, 500);
+            }
+        });
+    </script>
 </body>
 </html>
