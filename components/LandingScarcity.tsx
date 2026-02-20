@@ -6,15 +6,6 @@ interface Props {
 }
 
 const LandingScarcity: React.FC<Props> = ({ onAction }) => {
-  const [stock, setStock] = useState(10);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setStock(prev => (prev > 7 ? prev - 1 : prev));
-    }, 60000); // Decriment every 60s to simulate sales
-    return () => clearInterval(interval);
-  }, []);
-
   return (
     <section className="py-20 bg-red-950/20">
       <div className="max-w-4xl mx-auto px-6 text-center space-y-8">
@@ -23,11 +14,8 @@ const LandingScarcity: React.FC<Props> = ({ onAction }) => {
            <span>მარაგი იწურება</span>
         </div>
         <h2 className="text-3xl md:text-5xl font-bold">
-          დარჩენილია მხოლოდ <span className="text-[#d4af37]">{stock}</span> ბოთლი
+          დარჩენილია მხოლოდ <span className="text-[#d4af37]">10</span> ბოთლი
         </h2>
-        <p className="text-xl text-gray-400">
-          დღეს უკვე გაიყიდა 47 კომპლექტი. ნუ გადადებთ, შეუკვეთეთ ახლა და დაჯავშნეთ თქვენი ექსკლუზიური საჩუქარი.
-        </p>
         <button 
           onClick={onAction}
           className="bg-white text-black font-bold px-12 py-5 rounded-2xl hover:bg-gray-200 transition-all text-xl"
