@@ -1,5 +1,5 @@
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import html2canvas from 'https://esm.sh/html2canvas@1.4.1';
 import { jsPDF } from 'https://esm.sh/jspdf@2.5.1';
 
@@ -10,6 +10,8 @@ interface Props {
 const OrderFormModal: React.FC<Props> = ({ onClose }) => {
   const [step, setStep] = useState(1);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [emailStatus, setEmailStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
+  const [errorMessage, setErrorMessage] = useState('');
   const invoiceTemplateRef = useRef<HTMLDivElement>(null);
   
   const [formData, setFormData] = useState({
@@ -21,21 +23,24 @@ const OrderFormModal: React.FC<Props> = ({ onClose }) => {
     price: '115.00 ₾'
   });
 
-  const generateInvoice = async () => {
-    if (!invoiceTemplateRef.current) return;
-    setIsGenerating(true);
+  useEffect(() => {
+    if (step === 3 && emailStatus === 'idle') {
+      handleAutoEmail();
+    }
+  }, [step]);
 
+  const generateInvoiceBlob = async (): Promise<{ base64: string } | null> => {
+    if (!invoiceTemplateRef.current) return null;
+    
     try {
-      // Use html2canvas to capture the template as an image
-      // This bypasses PDF font encoding issues completely
       const canvas = await html2canvas(invoiceTemplateRef.current, {
-        scale: 3, // High quality
+        scale: 2, 
         useCORS: true,
         backgroundColor: '#ffffff',
         logging: false,
       });
 
-      const imgData = canvas.toDataURL('image/jpeg', 1.0);
+      const imgData = canvas.toDataURL('image/jpeg', 0.8);
       const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
@@ -47,10 +52,65 @@ const OrderFormModal: React.FC<Props> = ({ onClose }) => {
       const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
 
       pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
+      
+      // Return raw data string
+      return { base64: pdf.output('datauristring') };
+    } catch (err) {
+      console.error("PDF generation internal error:", err);
+      return null;
+    }
+  };
+
+  const handleAutoEmail = async () => {
+    setEmailStatus('sending');
+    setErrorMessage('');
+    
+    try {
+      const pdfData = await generateInvoiceBlob();
+      if (!pdfData) throw new Error("PDF-ის გენერაცია ვერ მოხერხდა");
+
+      const response = await fetch('/api/send-invoice', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: formData.email,
+          name: formData.name,
+          pdfBase64: pdfData.base64,
+          orderId: Math.floor(Math.random() * 90000 + 10000)
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setEmailStatus('sent');
+      } else {
+        throw new Error(data.details || data.error || "სერვერული შეცდომა");
+      }
+    } catch (err: any) {
+      console.error('Email Sending Error:', err);
+      setEmailStatus('error');
+      setErrorMessage(err.message || "ტექნიკური ხარვეზი");
+    }
+  };
+
+  const handleDownload = async () => {
+    setIsGenerating(true);
+    try {
+      const canvas = await html2canvas(invoiceTemplateRef.current!, {
+        scale: 3,
+        useCORS: true,
+        backgroundColor: '#ffffff',
+      });
+      const imgData = canvas.toDataURL('image/jpeg', 1.0);
+      const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+      const imgProps = pdf.getImageProperties(imgData);
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+      pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
       pdf.save(`niamori-invoice-${formData.name}.pdf`);
     } catch (err) {
-      console.error('PDF Generation Error:', err);
-      alert('PDF-ის გენერაციისას მოხდა შეცდომა. სცადეთ თავიდან.');
+      alert('PDF-ის ჩამოტვირთვისას მოხდა შეცდომა.');
     } finally {
       setIsGenerating(false);
     }
@@ -58,7 +118,7 @@ const OrderFormModal: React.FC<Props> = ({ onClose }) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setStep(3); // Show success step
+    setStep(3); 
   };
 
   const copyToClipboard = (text: string) => {
@@ -183,19 +243,39 @@ const OrderFormModal: React.FC<Props> = ({ onClose }) => {
           <div className="text-center py-6 space-y-8 animate-in fade-in zoom-in duration-300">
             <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-2">
               <svg className="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path>
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7"></path>
               </svg>
             </div>
+            
             <div className="space-y-3">
               <h3 className="text-3xl font-black">შეკვეთა მიღებულია!</h3>
-              <p className="text-gray-500 text-sm leading-relaxed px-4">
-                თქვენი ინვოისი მომზადებულია და გაიგზავნა მისამართზე: <br/> <strong>{formData.email}</strong>
-              </p>
+              
+              <div className="flex flex-col items-center justify-center space-y-2 py-2">
+                {emailStatus === 'sending' && (
+                  <div className="flex items-center space-x-2 text-blue-600 animate-pulse">
+                    <div className="w-4 h-4 border-2 border-blue-600/30 border-t-blue-600 rounded-full animate-spin"></div>
+                    <span className="text-xs font-bold uppercase tracking-widest">ინვოისი იგზავნება...</span>
+                  </div>
+                )}
+                {emailStatus === 'sent' && (
+                  <div className="flex items-center space-x-2 text-green-600 bg-green-50 px-4 py-2 rounded-full border border-green-100">
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/></svg>
+                    <span className="text-xs font-bold uppercase tracking-widest">ინვოისი გაიგზავნა: {formData.email}</span>
+                  </div>
+                )}
+                {emailStatus === 'error' && (
+                  <div className="flex flex-col items-center space-y-2 bg-red-50 p-4 rounded-2xl border border-red-100">
+                    <span className="text-xs font-bold text-red-600 uppercase tracking-widest">მეილის გაგზავნა ვერ მოხერხდა</span>
+                    <p className="text-[10px] text-red-400 font-medium px-4 break-words max-w-xs">{errorMessage}</p>
+                    <button onClick={handleAutoEmail} className="text-[10px] text-blue-600 font-bold underline uppercase tracking-widest mt-2">ხელახლა ცდა</button>
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="flex flex-col gap-4">
               <button 
-                onClick={generateInvoice}
+                onClick={handleDownload}
                 disabled={isGenerating}
                 className={`w-full ${isGenerating ? 'bg-gray-100' : 'bg-[#d4af37]'} text-black py-5 rounded-2xl font-black flex items-center justify-center space-x-3 hover:bg-[#b8952e] transition-all transform hover:scale-[1.02] shadow-xl`}
               >
@@ -206,12 +286,12 @@ const OrderFormModal: React.FC<Props> = ({ onClose }) => {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                   </svg>
                 )}
-                <span className="text-lg">{isGenerating ? 'მზადდება...' : 'PDF ინვოისის ჩამოტვირთვა'}</span>
+                <span className="text-lg font-black">{isGenerating ? 'მზადდება...' : 'ინვოისის გადმოწერა'}</span>
               </button>
               
               <button 
                 onClick={onClose}
-                className="w-full bg-black text-white py-4 rounded-xl font-bold opacity-80 hover:opacity-100"
+                className="w-full bg-black text-white py-4 rounded-2xl font-bold opacity-80 hover:opacity-100 transition-all"
               >
                 დასრულება
               </button>
@@ -220,19 +300,19 @@ const OrderFormModal: React.FC<Props> = ({ onClose }) => {
             <div className="bg-gray-50 p-6 rounded-3xl text-left border border-gray-100">
                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest text-center mb-4">საბანკო რეკვიზიტები</p>
                <div className="space-y-3">
-                  <div onClick={() => copyToClipboard('GE29TB7968536020100006')} className="cursor-pointer group flex justify-between items-center bg-white p-3 rounded-xl border border-gray-100 hover:border-blue-200 transition-colors">
+                  <div onClick={() => copyToClipboard('GE29TB7968536020100006')} className="cursor-pointer group flex justify-between items-center bg-white p-4 rounded-xl border border-gray-100 hover:border-blue-200 transition-all hover:shadow-md">
                     <div>
                       <p className="text-[10px] font-bold text-blue-600">TBC BANK</p>
-                      <code className="text-xs font-mono">GE29TB...0006</code>
+                      <code className="text-xs font-mono font-bold">GE29TB7968536020100006</code>
                     </div>
-                    <svg className="w-4 h-4 text-gray-300 group-hover:text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"/></svg>
+                    <svg className="w-5 h-5 text-gray-300 group-hover:text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"/></svg>
                   </div>
-                  <div onClick={() => copyToClipboard('GE21BG0000000499279996')} className="cursor-pointer group flex justify-between items-center bg-white p-3 rounded-xl border border-gray-100 hover:border-orange-200 transition-colors">
+                  <div onClick={() => copyToClipboard('GE21BG0000000499279996')} className="cursor-pointer group flex justify-between items-center bg-white p-4 rounded-xl border border-gray-100 hover:border-orange-200 transition-all hover:shadow-md">
                     <div>
                       <p className="text-[10px] font-bold text-orange-600">BOG</p>
-                      <code className="text-xs font-mono">GE21BG...9996</code>
+                      <code className="text-xs font-mono font-bold">GE21BG0000000499279996</code>
                     </div>
-                    <svg className="w-4 h-4 text-gray-300 group-hover:text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"/></svg>
+                    <svg className="w-5 h-5 text-gray-300 group-hover:text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"/></svg>
                   </div>
                </div>
             </div>
@@ -251,7 +331,7 @@ const OrderFormModal: React.FC<Props> = ({ onClose }) => {
                   required
                   type="text" 
                   className="w-full bg-gray-50 border-2 border-transparent p-4 rounded-2xl outline-none focus:border-black focus:bg-white transition-all text-lg font-medium"
-                  placeholder="გიორგი ბერიძე"
+                  placeholder="შეიყვანე სახელი და გვარი"
                   value={formData.name}
                   onChange={(e) => setFormData({...formData, name: e.target.value})}
                 />
@@ -299,18 +379,6 @@ const OrderFormModal: React.FC<Props> = ({ onClose }) => {
             >
               შეკვეთის დადასტურება
             </button>
-            
-            <div className="flex items-center justify-center space-x-4 pt-2">
-               <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest flex items-center">
-                 <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20"><path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/><path fillRule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clipRule="evenodd"/></svg>
-                 ინვოისი
-               </span>
-               <span className="text-gray-200">|</span>
-               <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest flex items-center">
-                 <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/></svg>
-                 გადარიცხვა
-               </span>
-            </div>
           </form>
         )}
       </div>
