@@ -5,7 +5,7 @@ const CallButton: React.FC = () => {
   return (
     <div className="fixed bottom-8 left-8 z-[100]">
       <a 
-        href="tel:+995555682266"
+        href="tel:+995599235129"
         className="flex items-center space-x-4 bg-red-700 text-white px-6 py-4 rounded-full shadow-[0_15px_35px_rgba(185,28,28,0.5)] hover:bg-red-600 transition-all hover:scale-110 active:scale-95 group relative"
       >
         {/* Pulsing indicator */}
@@ -24,7 +24,7 @@ const CallButton: React.FC = () => {
         {/* Text and Number */}
         <div className="flex flex-col pr-2">
           <span className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-80 leading-tight">დაგვირეკე</span>
-          <span className="text-base font-black tracking-tight whitespace-nowrap">+995 555 682 266</span>
+          <span className="text-base font-black tracking-tight whitespace-nowrap">+995 599 235 129</span>
         </div>
       </a>
     </div>

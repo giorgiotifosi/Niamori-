@@ -150,7 +150,7 @@ const OrderFormModal: React.FC<Props> = ({ onClose }) => {
               <div className="pt-4 text-sm text-gray-600 space-y-1">
                 <p>შპს ნიამორი | ს/კ: 405157431</p>
                 <p>ვ. ჩერქეზიშვილის 33, თბილისი</p>
-                <p>+995 555 682 266 | office@niamori.ge</p>
+                <p>+995 599 235 129 | office@niamori.ge</p>
               </div>
             </div>
             <div className="text-right">

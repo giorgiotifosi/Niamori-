@@ -12,7 +12,7 @@ export const getSommelierAdvice = async (userMessage: string) => {
 
   if (!apiKey || apiKey === "") {
     console.error("Gemini API_KEY is missing. Please configure it in Vercel.");
-    return "სამწუხაროდ, AI ასისტენტი დროებით მიუწვდომელია. გთხოვთ დაგვიკავშირდეთ ნომერზე: +995 555 682 266";
+    return "სამწუხაროდ, AI ასისტენტი დროებით მიუწვდომელია. გთხოვთ დაგვიკავშირდეთ ნომერზე: +995 599 235 129";
   }
 
   try {

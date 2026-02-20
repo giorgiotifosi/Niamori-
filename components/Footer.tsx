@@ -46,7 +46,7 @@ const Footer: React.FC = () => {
             <ul className="space-y-4 text-sm text-gray-400">
               <li>საქართველო, თბილისი</li>
               <li>ვარლამ ჩერქეზიშვილის 33</li>
-              <li>+995 555 682 266</li>
+              <li>+995 599 235 129</li>
               <li>niamori22@gmail.com</li>
               <li className="pt-6 space-y-2 flex flex-col">
                  <a href="https://www.facebook.com/niamori.ge" target="_blank" rel="noopener noreferrer" className="block hover:text-white transition-colors">facebook</a>

@@ -63,7 +63,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
               <p style="margin: 0; font-size: 12px; color: #998750; font-weight: bold;">შეკვეთის ნომერი: #${orderId}</p>
             </div>
 
-            <p style="font-size: 14px; color: #888;">კითხვების შემთხვევაში: <strong>+995 555 682 266</strong></p>
+            <p style="font-size: 14px; color: #888;">კითხვების შემთხვევაში: <strong>+995 599 235 129</strong></p>
           </div>
         </div>
       `,
