@@ -16,8 +16,13 @@ const LandingHero: React.FC<Props> = ({ onAction }) => {
 
       <div className="max-w-7xl mx-auto px-6 relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
         <div className="text-center lg:text-left space-y-8 order-2 lg:order-1">
-          <div className="inline-block bg-[#d4af37]/20 border border-[#d4af37]/30 text-[#d4af37] px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest mb-4">
-            პრემიუმ ხარისხი
+          <div className="flex flex-col lg:flex-row items-center lg:items-start gap-4 mb-4">
+            <div className="inline-block bg-[#d4af37]/20 border border-[#d4af37]/30 text-[#d4af37] px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest">
+              პრემიუმ ხარისხი
+            </div>
+            <div className="inline-block bg-red-900/20 border border-red-900/30 text-red-500 px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest animate-pulse">
+              დარჩენილია მხოლოდ 10 ბოთლი
+            </div>
           </div>
           <h1 className="text-5xl md:text-7xl font-bold leading-tight">
             საჩუქარი, რომელსაც <span className="text-[#d4af37]">არასდროს</span> დაივიწყებენ

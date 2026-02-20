@@ -18,10 +18,34 @@ const OrderFormModal: React.FC<Props> = ({ onClose }) => {
     name: '',
     email: '',
     phone: '',
-    engraving: '',
+    quantity: 1,
+    engravings: [''],
     wine: 'ქინძმარაული (ნახევრად ტკბილი)',
-    price: '115.00 ₾'
+    pricePerUnit: 115.00
   });
+
+  const totalPrice = (formData.quantity * formData.pricePerUnit).toFixed(2);
+
+  const handleQuantityChange = (newQty: number) => {
+    const qty = Math.max(1, Math.min(10, newQty));
+    const newEngravings = [...formData.engravings];
+    
+    if (qty > newEngravings.length) {
+      for (let i = newEngravings.length; i < qty; i++) {
+        newEngravings.push('');
+      }
+    } else {
+      newEngravings.splice(qty);
+    }
+    
+    setFormData({ ...formData, quantity: qty, engravings: newEngravings });
+  };
+
+  const handleEngravingChange = (index: number, text: string) => {
+    const newEngravings = [...formData.engravings];
+    newEngravings[index] = text;
+    setFormData({ ...formData, engravings: newEngravings });
+  };
 
   useEffect(() => {
     if (step === 3 && emailStatus === 'idle') {
@@ -191,13 +215,15 @@ const OrderFormModal: React.FC<Props> = ({ onClose }) => {
               <tr className="border-b border-gray-100">
                 <td className="py-8">
                   <p className="font-bold text-xl">{formData.wine}</p>
-                  <p className="text-gray-500 mt-2 italic text-sm">
-                    პერსონალური გრავირება: "{formData.engraving}"
-                  </p>
-                  <p className="text-xs text-[#d4af37] font-bold mt-1 uppercase">+ სასაჩუქრე ხის ყუთი</p>
+                  <div className="text-gray-500 mt-2 italic text-sm space-y-1">
+                    {formData.engravings.map((text, idx) => (
+                      <p key={idx}>ბოთლი {idx + 1}: "{text || 'ტექსტის გარეშე'}"</p>
+                    ))}
+                  </div>
+                  <p className="text-xs text-[#d4af37] font-bold mt-2 uppercase">+ სასაჩუქრე ხის ყუთი (თითოეულზე)</p>
                 </td>
-                <td className="py-8 text-right font-bold text-lg">1</td>
-                <td className="py-8 text-right font-bold text-xl">{formData.price}</td>
+                <td className="py-8 text-right font-bold text-lg">{formData.quantity}</td>
+                <td className="py-8 text-right font-bold text-xl">{totalPrice} ₾</td>
               </tr>
             </tbody>
           </table>
@@ -222,7 +248,7 @@ const OrderFormModal: React.FC<Props> = ({ onClose }) => {
             <div className="flex flex-col justify-end text-right space-y-4">
               <div className="border-t-4 border-black pt-6 flex justify-between items-center">
                 <span className="text-sm font-black uppercase">სულ გადასახდელი</span>
-                <span className="text-4xl font-black text-red-800">{formData.price}</span>
+                <span className="text-4xl font-black text-red-800">{totalPrice} ₾</span>
               </div>
               <p className="text-[10px] text-gray-400 italic">
                 * გადახდა შესაძლებელია როგორც გადმორიცხვით, ასევე ნაღდი ანგარიშსწორებით კურიერთან.
@@ -369,14 +395,43 @@ const OrderFormModal: React.FC<Props> = ({ onClose }) => {
               </div>
 
               <div>
-                <label className="text-[10px] font-black uppercase text-gray-400 ml-1 tracking-widest">გრავირების ტექსტი</label>
-                <textarea 
-                  required
-                  className="w-full bg-gray-50 border-2 border-transparent p-4 rounded-2xl outline-none focus:border-black focus:bg-white transition-all text-lg font-medium min-h-[120px]"
-                  placeholder="მაგ: გილოცავ, საუკეთესო სურვილებით!"
-                  value={formData.engraving}
-                  onChange={(e) => setFormData({...formData, engraving: e.target.value})}
-                />
+                <label className="text-[10px] font-black uppercase text-gray-400 ml-1 tracking-widest">რაოდენობა (მაქს. 10)</label>
+                <div className="flex items-center space-x-4">
+                  <button 
+                    type="button"
+                    onClick={() => handleQuantityChange(formData.quantity - 1)}
+                    className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center font-bold text-xl hover:bg-gray-200"
+                  >
+                    -
+                  </button>
+                  <span className="text-2xl font-black w-8 text-center">{formData.quantity}</span>
+                  <button 
+                    type="button"
+                    onClick={() => handleQuantityChange(formData.quantity + 1)}
+                    className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center font-bold text-xl hover:bg-gray-200"
+                  >
+                    +
+                  </button>
+                  <span className="text-gray-400 font-bold ml-auto">{totalPrice} ₾</span>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <label className="text-[10px] font-black uppercase text-gray-400 ml-1 tracking-widest">გრავირების ტექსტები</label>
+                {formData.engravings.map((text, index) => (
+                  <div key={index} className="relative">
+                    <span className="absolute -top-2 -left-2 bg-black text-white text-[10px] font-black px-2 py-1 rounded-lg z-10">
+                      #{index + 1}
+                    </span>
+                    <textarea 
+                      required
+                      className="w-full bg-gray-50 border-2 border-transparent p-4 pt-6 rounded-2xl outline-none focus:border-black focus:bg-white transition-all text-lg font-medium min-h-[100px]"
+                      placeholder={`ბოთლი ${index + 1}: მაგ: გილოცავ!`}
+                      value={text}
+                      onChange={(e) => handleEngravingChange(index, e.target.value)}
+                    />
+                  </div>
+                ))}
               </div>
             </div>
 

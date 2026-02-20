@@ -6,12 +6,12 @@ interface Props {
 }
 
 const LandingScarcity: React.FC<Props> = ({ onAction }) => {
-  const [stock, setStock] = useState(12);
+  const [stock, setStock] = useState(10);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setStock(prev => (prev > 3 ? prev - 1 : prev));
-    }, 45000); // Decriment every 45s to simulate sales
+      setStock(prev => (prev > 7 ? prev - 1 : prev));
+    }, 60000); // Decriment every 60s to simulate sales
     return () => clearInterval(interval);
   }, []);
 
