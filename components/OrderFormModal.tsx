@@ -1,7 +1,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import html2canvas from 'https://esm.sh/html2canvas@1.4.1';
-import { jsPDF } from 'https://esm.sh/jspdf@2.5.1';
+import html2canvas from 'html2canvas';
+import { jsPDF } from 'jspdf';
 
 interface Props {
   onClose: () => void;
@@ -80,7 +80,14 @@ const OrderFormModal: React.FC<Props> = ({ onClose }) => {
         }),
       });
 
-      const data = await response.json();
+      let data;
+      const contentType = response.headers.get("content-type");
+      if (contentType && contentType.indexOf("application/json") !== -1) {
+        data = await response.json();
+      } else {
+        const text = await response.text();
+        throw new Error(text || `სერვერული შეცდომა (${response.status})`);
+      }
 
       if (response.ok) {
         setEmailStatus('sent');
