@@ -28,7 +28,7 @@ const LandingHero: React.FC<Props> = ({ onAction }) => {
             საჩუქარი, რომელსაც <span className="text-[#d4af37]">არასდროს</span> დაივიწყებენ
           </h1>
           <p className="text-xl text-gray-400 max-w-xl mx-auto lg:mx-0">
-            პერსონალური გრავირება პირდაპირ მინაზე. ეს არ არის სტიკერი - ეს არის მარადიული კვალი თქვენს საჩუქარზე.
+            პერსონალური გრავირება ნიამორის, ღვინო ქინძმარაულის, მინის ბოთლზე. ეს არ არის მიკრული სტიკერი - ეს არის მარადიული კვალი თქვენს საჩუქარზე.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-4">
             <button 
